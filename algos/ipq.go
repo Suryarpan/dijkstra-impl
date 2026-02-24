@@ -1,5 +1,7 @@
 package algos
 
+import "math"
+
 type IndexedPQ struct {
 	nodes []int // The heap containing node IDs
 	dist  []int // Reference to the distances array
@@ -78,4 +80,28 @@ func (pq *IndexedPQ) swap(i, j int) {
 	pq.nodes[i], pq.nodes[j] = pq.nodes[j], pq.nodes[i]
 	pq.pos[pq.nodes[i]] = i
 	pq.pos[pq.nodes[j]] = j
+}
+
+func DijkstraIPQ(graph *Graph, source int) []int {
+	n := len(graph.edges)
+	dist := make([]int, n)
+	for i := range dist {
+		dist[i] = math.MaxInt32
+	}
+	dist[source] = 0
+
+	ipq := NewIndexedPQ(n, dist)
+	ipq.PushOrUpdate(source)
+
+	for len(ipq.nodes) > 0 {
+		u := ipq.Pop()
+
+		for _, edge := range graph.edges[u] {
+			if newDist := dist[u] + edge.weight; newDist < dist[edge.to] {
+				dist[edge.to] = newDist
+				ipq.PushOrUpdate(edge.to)
+			}
+		}
+	}
+	return dist
 }
